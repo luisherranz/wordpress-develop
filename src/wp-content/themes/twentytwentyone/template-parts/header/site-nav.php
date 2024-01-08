@@ -14,11 +14,10 @@
 		id="site-navigation"
 		class="primary-navigation"
 		aria-label="<?php esc_attr_e( 'Primary menu', 'twentytwentyone' ); ?>"
-		data-wp-on--click="actions.listenToSpecialClicks"
+		data-wp-on--click="actions.listenToHashClicks"
 		data-wp-on--keydown="actions.trapFocusInModal"
 		data-wp-context='{"firstFocusable": null, "lastFocusable": null, "activeSubmenu": null}'
 		data-wp-watch--focusable="callbacks.determineFocusableElements"
-		data-wp-watch--submenus="callbacks.refreshSubmenus"
 	>
 		<div class="menu-button-container">
 			<button

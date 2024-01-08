@@ -29,7 +29,7 @@ function twenty_twenty_one_add_sub_menu_toggle( $output, $item, $depth, $args ) 
 
 		// Extra attributes depending on whether or not the Interactivity API is being used.
 		if ( function_exists( 'gutenberg_register_module' ) ) {
-			$extra_attr = '';
+			$extra_attr = 'data-wp-on--click="actions.toggleSubmenu" data-wp-bind--aria-expanded="state.isSubmenuOpened"';
 		} else {
 			$extra_attr = ' onClick="twentytwentyoneExpandSubMenu(this)"';
 		}

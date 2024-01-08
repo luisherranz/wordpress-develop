@@ -3,19 +3,6 @@
  */
 import { store, getContext, getElement } from '@wordpress/interactivity';
 
-function checkClass( element, className ) {
-    if ( element.classList.contains( className ) ) {
-        return element;
-    }
-    if ( element.parentElement && element.parentElement.classList.contains( className ) ) {
-        return element.parentElement;
-    }
-    if ( element.parentElement.parentElement && element.parentElement.parentElement.classList.contains( className ) ) {
-        return element.parentElement.parentElement;
-    }
-    return null;
-}
-
 const { state, actions } = store( 'twentytwentyone', {
     state: {
         isPrimaryMenuOpen: false,
@@ -23,6 +10,11 @@ const { state, actions } = store( 'twentytwentyone', {
         prevScroll: 0,
         isDarkMode: false,
         isDarkModeTogglerHidden: false,
+        get isSubmenuOpened() {
+            const { ref } = getElement();
+            const { activeSubmenu } = getContext();
+            return !! activeSubmenu && ref === activeSubmenu;
+        },
     },
     actions: {
         togglePrimaryMenu: () => {
@@ -37,6 +29,12 @@ const { state, actions } = store( 'twentytwentyone', {
             state.isPrimaryMenuOpen = false;
         },
 
+        toggleSubmenu: () => {
+            const { ref } = getElement();
+            const ctx = getContext();
+            ctx.activeSubmenu = ctx.activeSubmenu === ref ? null : ref;
+        },
+
         toggleDarkMode: () => {
             state.isDarkMode = ! state.isDarkMode;
             window.localStorage.setItem( 'twentytwentyoneDarkMode', state.isDarkMode ? 'yes' : 'no' );
@@ -49,70 +47,55 @@ const { state, actions } = store( 'twentytwentyone', {
 
             const ctx = getContext();
 
-			const escKey = event.keyCode === 27;
+            const escKey = event.keyCode === 27;
             if ( escKey ) {
-				event.preventDefault();
+                event.preventDefault();
                 actions.closePrimaryMenu();
                 if ( ctx.firstFocusable ) {
                     ctx.firstFocusable.focus();
                 }
                 return;
-			}
+            }
 
             const tabKey = event.keyCode === 9;
-			const shiftKey = event.shiftKey;
-			const activeEl = document.activeElement; // eslint-disable-line @wordpress/no-global-active-element
+            const shiftKey = event.shiftKey;
+            const activeEl = document.activeElement; // eslint-disable-line @wordpress/no-global-active-element
 
             if ( ! shiftKey && tabKey && ctx.lastFocusable === activeEl ) {
-				event.preventDefault();
-				if ( ctx.firstFocusable ) {
+                event.preventDefault();
+                if ( ctx.firstFocusable ) {
                     ctx.firstFocusable.focus();
                 }
                 return;
-			}
+            }
 
-			if ( shiftKey && tabKey && ctx.firstFocusable === activeEl ) {
-				event.preventDefault();
-				if ( ctx.lastFocusable ) {
+            if ( shiftKey && tabKey && ctx.firstFocusable === activeEl ) {
+                event.preventDefault();
+                if ( ctx.lastFocusable ) {
                     ctx.lastFocusable.focus();
                 }
                 return;
-			}
+            }
 
-			// If there are no elements in the menu, don't move the focus
-			if ( tabKey && ctx.firstFocusable === ctx.lastFocusable ) {
-				event.preventDefault();
-			}
+            // If there are no elements in the menu, don't move the focus
+            if ( tabKey && ctx.firstFocusable === ctx.lastFocusable ) {
+                event.preventDefault();
+            }
         },
 
-        listenToSpecialClicks: ( event ) => {
-            const ctx = getContext();
+        listenToHashClicks: ( event ) => {
+            // If this is a hash, close the menu and scroll it into view.
+            if ( event.target.hash ) {
+                actions.closePrimaryMenu();
 
-            // Check if this was a `.sub-menu-toggle` click.
-            const subMenuToggle = checkClass( event.target, 'sub-menu-toggle' );
-            if ( subMenuToggle ) {
-                if ( ctx.activeSubmenu === subMenuToggle ) {
-                    ctx.activeSubmenu = null;
-                } else {
-                    ctx.activeSubmenu = subMenuToggle;
-                }
-                return;
+                // Wait 550 and scroll to the anchor.
+                setTimeout( () => {
+                    var anchor = document.getElementById( event.target.hash.slice( 1 ) );
+                    if ( anchor ) {
+                        anchor.scrollIntoView();
+                    }
+                }, 550 );
             }
-
-            // Otherwise, check if this was an anchor link click.
-            if ( ! event.target.hash ) {
-                return;
-            }
-
-            actions.closePrimaryMenu();
-
-            // Wait 550 and scroll to the anchor.
-            setTimeout( () => {
-                var anchor = document.getElementById( event.target.hash.slice( 1 ) );
-                if ( anchor ) {
-                    anchor.scrollIntoView();
-                }
-            }, 550 );
         },
     },
     callbacks: {
@@ -123,7 +106,7 @@ const { state, actions } = store( 'twentytwentyone', {
 
             const ctx = getContext();
             const { ref } = getElement();
-			const elements = ref.querySelectorAll( 'input, a, button' );
+            const elements = ref.querySelectorAll( 'input, a, button' );
 
             ctx.firstFocusable = elements[ 0 ];
             ctx.lastFocusable = elements[ elements.length - 1 ];
@@ -132,7 +115,7 @@ const { state, actions } = store( 'twentytwentyone', {
         refreshSubmenus: () => {
             const ctx = getContext();
             const { ref } = getElement();
-			const elements = ref.querySelectorAll( '.sub-menu-toggle' );
+            const elements = ref.querySelectorAll( '.sub-menu-toggle' );
             elements.forEach( ( subMenuToggle ) => {
                 if ( ctx.activeSubmenu === subMenuToggle ) {
                     subMenuToggle.setAttribute( 'aria-expanded', 'true' );
