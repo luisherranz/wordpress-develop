@@ -35,7 +35,9 @@ module.exports = function (
 			memo[ packageName ] = {
 				import: normalizeJoin(
 					baseDir,
-					`node_modules/@wordpress/${ packageName }`
+					// Todo, remove the `/src/index.js` part once the build-modules output
+					// of these packages is properly built.
+					`node_modules/@wordpress/${ packageName }/src/index.js`
 				),
 			};
 
@@ -53,6 +55,18 @@ module.exports = function (
 			},
 			environment: { module: true },
 		},
+		externalsType: 'module',
+		externals: {
+			// Todo, use the MODULES constant instead.
+			'@wordpress/interactivity': '@wordpress/interactivity',
+			'@wordpress/interactivity-router':
+				'import @wordpress/interactivity-router',
+		},
+		resolve: {
+			// Todo, remove once the build-modules output of these packages is
+			// properly built.
+			extensions: [ '.js', '.ts', '.tsx' ],
+		},
 		module: {
 			rules: [
 				{
@@ -66,6 +80,9 @@ module.exports = function (
 								babelrc: false,
 								configFile: false,
 								presets: [
+									// Todo, remove once the build-modules output of these
+									// packages is properly built.
+									'@babel/preset-typescript',
 									[
 										'@babel/preset-react',
 										{
