@@ -155,6 +155,82 @@ class Tests_HtmlApi_WpHtmlSanitizer extends WP_UnitTestCase {
 				'<math><mrow href="javascript:alert(1)"><mi>x</mi></mrow></math>',
 				'<math><mrow><mi>x</mi></mrow></math>',
 			),
+			'base is removed by the safe baseline even when allowed' => array(
+				array( 'elements' => array( 'div', 'base' ) ),
+				'<div><base href="https://example.org/"></base></div>',
+				'<div></div>',
+			),
+			'base is preserved by unsafe sanitization' => array(
+				array( 'elements' => array( 'div', 'base' ) ),
+				'<div><base href="https://example.org/"></base></div>',
+				'<div><base href="https://example.org/"></div>',
+				false,
+			),
+		);
+	}
+
+	/**
+	 * Ensures event handler content attributes are removed by safe
+	 * sanitization even when a configuration explicitly allows them, across
+	 * the HTML GlobalEventHandlers/WindowEventHandlers set and the live
+	 * cross-specification handlers the HTML baseline does not cover.
+	 *
+	 * @dataProvider data_event_handler_attributes
+	 *
+	 * @param string $attribute An event handler content attribute name.
+	 */
+	public function test_event_handlers_are_stripped_even_when_allowed( string $attribute ) {
+		$html = "<a {$attribute}=\"code()\" title=\"ok\">x</a>";
+
+		$this->assertSame(
+			'<a title="ok">x</a>',
+			WP_HTML_Sanitizer::sanitize_with_config( $html, array( 'attributes' => array( $attribute, 'title' ) ), true ),
+			"Safe sanitization did not remove the '{$attribute}' event handler attribute."
+		);
+	}
+
+	/**
+	 * Data provider.
+	 *
+	 * @return array[]
+	 */
+	public function data_event_handler_attributes() {
+		$attributes = array(
+			// Common HTML handlers.
+			'onclick',
+			'onerror',
+			'onload',
+			// HTML handlers omitted by the specification's published
+			// event-handler-content-attributes list.
+			'onabort',
+			'oncommand',
+			'onreadystatechange',
+			'onshow',
+			'onvisibilitychange',
+			// Live handlers defined by other specifications.
+			'onanimationstart',
+			'ontransitionend',
+			'onpointerdown',
+			'ontouchstart',
+			'onwebkitanimationstart',
+			'onbegin',
+		);
+
+		$cases = array();
+		foreach ( $attributes as $attribute ) {
+			$cases[ $attribute ] = array( $attribute );
+		}
+		return $cases;
+	}
+
+	/**
+	 * Ensures a non-handler attribute whose name merely begins with "on" is
+	 * not treated as an event handler.
+	 */
+	public function test_non_handler_on_prefixed_attribute_survives() {
+		$this->assertSame(
+			'<a one="1">x</a>',
+			WP_HTML_Sanitizer::sanitize_with_config( '<a one="1">x</a>', array( 'attributes' => array( 'one' ) ), true )
 		);
 	}
 

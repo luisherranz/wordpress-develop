@@ -103,6 +103,17 @@ class WP_HTML_Sanitizer {
 	 *
 	 * These elements are removed by safe sanitization regardless of the
 	 * configured lists, and folded into the configuration by remove_unsafe().
+	 * The list consists of the HTML elements whose specification definitions
+	 * mark them as sanitizer-unsafe, plus the obsolete `frame` element and the
+	 * SVG `script` and `use` elements.
+	 *
+	 * These constants are living-standard data and must be regenerated when the
+	 * pinned revision changes. Pinned to WHATWG HTML commit
+	 * c38efee5f866693d0310f8ce689588a7fe75e8f4 (2026-07-09), which marked the
+	 * HTML `base` element as sanitizer-unsafe. The `base` categorization is
+	 * volatile: it was "Uncategorized with navigating URL attributes" until
+	 * that commit, so any refresh must re-check it against the pinned source
+	 * rather than a cached copy or the WICG builtins mirror (which can lag).
 	 *
 	 * @see https://html.spec.whatwg.org/multipage/dynamic-markup-insertion.html#built-in-safe-baseline-configuration
 	 *
@@ -173,12 +184,31 @@ class WP_HTML_Sanitizer {
 	/**
 	 * Event handler content attributes, all in no namespace.
 	 *
-	 * The specification defers to the implementation-defined set of event
-	 * handler content attributes; a prefix rule alone is wrong (for example,
-	 * an attribute named "one" must survive sanitization). This list covers
-	 * the HTML specification's GlobalEventHandlers and WindowEventHandlers,
-	 * plus SVG animation events and legacy or vendor handlers implemented by
-	 * browsers.
+	 * The safe baseline removes event handler content attributes. The
+	 * specification's "remove unsafe" algorithm defers to an
+	 * implementation-defined set of these, and the HTML Sanitizer conformance
+	 * tests likewise only require that each removed attribute name begin with
+	 * "on" (they do not pin the exact set). A bare "on*" prefix rule is still
+	 * wrong, because non-handler attributes such as "one" must survive.
+	 *
+	 * This list is therefore a deliberate, safety-oriented superset:
+	 *
+	 *  - The HTML specification's GlobalEventHandlers and WindowEventHandlers
+	 *    content attributes, the complete set. Note this is broader than the
+	 *    specification's published event-handler-content-attributes list, which
+	 *    omits several real HTML handlers (for example onabort, oncommand,
+	 *    onreadystatechange, onselectstart, onshow, and onvisibilitychange);
+	 *    matching only that list would leave those unremoved when a
+	 *    configuration explicitly allowed them.
+	 *  - Live event handler content attributes defined by other specifications
+	 *    that the HTML baseline does not cover but which execute script in
+	 *    browsers: CSS Animations and Transitions (onanimation*, ontransition*,
+	 *    and the legacy onwebkit* aliases), Pointer Events (onpointer*,
+	 *    ongotpointercapture, onlostpointercapture), Touch Events (ontouch*),
+	 *    and SVG animation timing (onbegin, onend, onrepeat).
+	 *
+	 * These are only consulted when a configuration would otherwise allow an
+	 * attribute; the default configuration allows none of them.
 	 *
 	 * @since 7.1.0
 	 */
@@ -275,6 +305,7 @@ class WP_HTML_Sanitizer {
 		'onpopstate'                 => true,
 		'onprogress'                 => true,
 		'onratechange'               => true,
+		'onreadystatechange'         => true,
 		'onrejectionhandled'         => true,
 		'onrepeat'                   => true,
 		'onreset'                    => true,
@@ -290,6 +321,7 @@ class WP_HTML_Sanitizer {
 		'onselect'                   => true,
 		'onselectionchange'          => true,
 		'onselectstart'              => true,
+		'onshow'                     => true,
 		'onslotchange'               => true,
 		'onstalled'                  => true,
 		'onstorage'                  => true,
@@ -307,6 +339,7 @@ class WP_HTML_Sanitizer {
 		'ontransitionstart'          => true,
 		'onunhandledrejection'       => true,
 		'onunload'                   => true,
+		'onvisibilitychange'         => true,
 		'onvolumechange'             => true,
 		'onwaiting'                  => true,
 		'onwebkitanimationend'       => true,
