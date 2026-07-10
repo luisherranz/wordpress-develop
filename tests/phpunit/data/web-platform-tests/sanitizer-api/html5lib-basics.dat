@@ -1,0 +1,60 @@
+#data
+Hello!
+#document
+| "Hello!"
+
+#data
+<p>bla
+#document
+| <p>
+|   "bla"
+
+#data
+<p id=abc def='123'>texty<!-- xxx -->textz
+#document
+| <p>
+|   def="123"
+|   id="abc"
+|   "texty"
+|   <!-- xxx -->
+|   "textz"
+
+#data
+<p>Hello <b>World</b><span>!
+#document
+| <p>
+|   "Hello "
+|   <b>
+|     "World"
+|   <span>
+|     "!"
+
+#data
+<p>A template example.<template>Hello <b>World</b></template>!
+#document
+| <p>
+|   "A template example."
+|   <template>
+|     content
+|       "Hello "
+|       <b>
+|         "World"
+|   "!"
+
+#data
+<td>Interesting parse context.</td>
+#document-fragment
+table
+#document
+| <tbody>
+|   <tr>
+|     <td>
+|       "Interesting parse context."
+
+#data
+<p>A rather boring parse context.
+#document-fragment
+p
+#document
+| <p>
+|   "A rather boring parse context."

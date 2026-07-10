@@ -1,0 +1,257 @@
+#data
+text
+#document
+| "text"
+
+
+
+#data
+<div><p>Hello <b>World!</b>
+#config
+{}
+#document
+| <div>
+|   <p>
+|     "Hello "
+|     <b>
+|       "World!"
+
+#data
+<div><p>Hello <b>World!</b>
+#config
+{ "elements": ["div", "p"]}
+#document
+| <div>
+|   <p>
+|     "Hello "
+
+#data
+<div><p>Hello <b>World!</b>
+#config
+{ "elements": ["div", "b"]}
+#document
+| <div>
+
+#data
+<div><p>Hello <b>World!</b>
+#config
+{ "removeElements": ["b"]}
+#document
+| <div>
+|   <p>
+|     "Hello "
+
+#data
+<div><p>Hello <b>World!</b>
+#config
+{ "replaceWithChildrenElements": ["p"]}
+#document
+| <div>
+|   "Hello "
+|   <b>
+|     "World!"
+
+
+
+#data
+<p id="hello" style="font-weight: bold">x
+#config
+{}
+#document
+| <p>
+|   id="hello"
+|   style="font-weight: bold"
+|   "x"
+
+#data
+<p id="hello" style="font-weight: bold">x
+#config
+{ "attributes": ["style"]}
+#document
+| <p>
+|   style="font-weight: bold"
+|   "x"
+
+#data
+<p id="hello" style="font-weight: bold">x
+#config
+{ "removeAttributes": ["style"]}
+#document
+| <p>
+|   id="hello"
+|   "x"
+
+
+
+#data
+<div style="font-weight: bold" class="bourgeoisie">
+#config
+{ "elements": [{ "name": "div", "attributes": ["style"]}]}
+#document
+| <div>
+|   style="font-weight: bold"
+
+#data
+<div style="font-weight: bold" class="bourgeoisie">
+#config
+{ "elements": [{ "name": "div", "removeAttributes": ["style"]}]}
+#document
+| <div>
+|   class="bourgeoisie"
+
+
+
+#data
+a <!-- comment --> b
+#config
+{ "comments": true}
+#document
+| "a "
+| <!-- comment -->
+| " b"
+
+#data
+a <!-- comment --> b
+#config
+{ "comments": false}
+#document
+| "a  b"
+
+
+
+#data
+<p data-x="1" data-y="2" data-z="3">
+#config
+{
+  "attributes": [],
+  "dataAttributes": true
+}
+#document
+| <p>
+|   data-x="1"
+|   data-y="2"
+|   data-z="3"
+
+#data
+<p data-x="1" data-y="2" data-z="3">
+#config
+{
+  "attributes": [],
+  "dataAttributes": false
+}
+#document
+| <p>
+
+#data
+<p data-x="1" data-y="2" data-z="3">
+#config
+{
+  "attributes": [ "data-x" ],
+  "dataAttributes": false
+}
+#document
+| <p>
+|   data-x="1"
+
+
+
+#data
+<svg><rect></svg><math><mi>x
+#document
+| <svg svg>
+|   <svg rect>
+| <math math>
+|   <math mi>
+|     "x"
+
+#data
+<svg><rect>
+#config
+{ "elements": [{ "name": "svg", "namespace": "http://www.w3.org/2000/svg" }]}
+#document
+| <svg svg>
+
+#data
+<svg><rect>
+#config
+{ "elements": [{ "name": "svg", "namespace": "http://www.w3.org/2000/svg" },
+               { "name": "rect", "namespace": "http://www.w3.org/2000/svg" }]}
+#document
+| <svg svg>
+|   <svg rect>
+
+#data
+<svg><rect>
+#config
+{ "removeElements": [{ "name": "rect", "namespace": "http://www.w3.org/2000/svg" }]}
+#document
+| <svg svg>
+
+#data
+<math><mi>x
+#config
+{ "elements": [{ "name": "math", "namespace": "http://www.w3.org/1998/Math/MathML" }]}
+#document
+| <math math>
+
+#data
+<math><mi>x
+#config
+{ "elements": [{ "name": "math", "namespace": "http://www.w3.org/1998/Math/MathML" },
+               { "name": "mi", "namespace": "http://www.w3.org/1998/Math/MathML" }]}
+#document
+| <math math>
+|   <math mi>
+|     "x"
+
+#data
+<math><mi>x
+#config
+{ "removeElements": [{ "name": "mi", "namespace": "http://www.w3.org/1998/Math/MathML" }] }
+#document
+| <math math>
+
+#data
+<svg xml:space="default" xlink:href="about:blank" xmlns:foo="barspace">
+#config
+{ "elements": [{ "name": "svg", "namespace": "http://www.w3.org/2000/svg" }]}
+#document
+| <svg svg>
+|   xml space="default"
+|   xlink href="about:blank"
+|   xmlns:foo="barspace"
+
+#data
+<svg xml:space="default" xlink:href="about:blank" xmlns:foo="barspace">
+#config
+{ "elements": [{ "name": "svg", "namespace": "http://www.w3.org/2000/svg" }],
+  "attributes": [{"name": "space", "namespace": "http://www.w3.org/XML/1998/namespace" }] }
+#document
+| <svg svg>
+|   xml space="default"
+
+#data
+<svg xml:space="default" xlink:href="about:blank" xmlns:foo="barspace">
+#config
+{ "elements": [{ "name": "svg", "namespace": "http://www.w3.org/2000/svg" }],
+  "attributes": [{"name": "href", "namespace": "http://www.w3.org/1999/xlink" }] }
+#document
+| <svg svg>
+|   xlink href="about:blank"
+
+
+
+#data
+<div start=1 value=5 lang=en><ol start=1 value=5 lang=en><li start=1 value=5 lang=en>xx
+#config
+"default"
+#document
+| <div>
+|   lang="en"
+|   <ol>
+|     lang="en"
+|     start="1"
+|     <li>
+|       lang="en"
+|       value="5"
+|       "xx"
